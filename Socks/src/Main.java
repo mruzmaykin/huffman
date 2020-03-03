@@ -13,13 +13,14 @@ public class Main {
     public static void main(String[] args) {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
         LinkedBlockingQueue<Sock> socksQueue = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Sock> washerQueue = new LinkedBlockingQueue<>();
         Random rand = new Random();
         for (int i = 0; i < MAX_COLORS; i++){
             Color sockColor = Color.values()[i];
             SockProducer sockProd= new SockProducer(sockColor,rand.nextInt(MAX_SOCKS),socksQueue);
             executor.submit(sockProd);
         }
-        SockMatcher sockMatcher = new SockMatcher(socksQueue);
+        SockMatcher sockMatcher = new SockMatcher(socksQueue,washerQueue);
         executor.submit(sockMatcher);
     }
 }
@@ -68,12 +69,20 @@ class Sock implements  Comparable<Sock>{
     }
 }
 
+class Washer implements Runnable{
+    @Override
+    public void run(){
+
+    }
+}
 class SockMatcher implements Runnable{
     int[] socksNum;
     private LinkedBlockingQueue<Sock> sockQueue;
+    private LinkedBlockingQueue<Sock> washQueue;
     private HashMap<Color,Sock> socks;
-    SockMatcher(LinkedBlockingQueue<Sock> queue){
-        this.sockQueue = queue;
+    SockMatcher(LinkedBlockingQueue<Sock> socksQueue, LinkedBlockingQueue<Sock> washerQueue){
+        this.washQueue = washerQueue;
+        this.sockQueue = socksQueue;
         this.socks = new HashMap<>();
         this.socksNum = new int[Main.MAX_COLORS];
         for (int i = 0; i < Main.MAX_COLORS; i++){
@@ -100,6 +109,7 @@ class SockMatcher implements Runnable{
                     Sock s = sockQueue.take();
                     Color color = s.sockColor;
                     if (socks.containsKey(color)) {
+                        washQueue.add()
                         socks.remove(color);
                         socksNum[color.ordinal()] += 2;
                         System.out.println("Sock Matcher: removed " + socksNum[color.ordinal()] + " " + color + " socks.");
