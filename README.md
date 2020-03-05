@@ -1,0 +1,2 @@
+# huffman
+Parallel huffman encoding
