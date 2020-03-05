@@ -6,25 +6,122 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
+
 public class HuffmanEncoding {
+    private BitOutputStream output;
     private long start1;
+    private float sec1;
+    private float sec2;
+
     public HuffmanEncoding(String str)
     {
-
-        start1 = System.currentTimeMillis();
-        readText(str);
-        putInQueue();
+//        float taskA = 0;
+//        float taskB = 0;
+//        for (int i = 0; i < 100; i ++) {
+            start1 = System.currentTimeMillis();
+            readText(str);
+            putInQueue();
+//            taskA += sec1;
+//            taskB += sec2;
+//        }
+//        taskA = taskA/100;
+//        taskB = taskB/100;
+//        System.out.println("Task A: " + taskA + "seconds\nTask B: " + taskB + " seconds");
     }
 
 
+
+
+
+    class Node
+    {
+        char ch;
+        int freq;
+        Node left = null, right = null;
+
+        Node(char ch, int freq)
+        {
+            this.ch = ch;
+            this.freq = freq;
+        }
+
+        public Node(char ch, int freq, Node left, Node right) {
+            this.ch = ch;
+            this.freq = freq;
+            this.left = left;
+            this.right = right;
+        }
+    };
+
+    PriorityQueue<Node> pq;
+    Map<Character,Integer> freq;
+    StringBuilder original;
+    StringBuilder encoded;
+
+    public void readText(String path)
+    {
+        original = new StringBuilder();
+        freq = new HashMap<>();
+        try {
+            File myObj = new File(path);
+            Scanner myReader = new Scanner(myObj);
+            for (int i = 0; i < 7; i++){
+                myReader.nextLine();
+            }
+            while (myReader.hasNextLine()) {
+
+                String line = myReader.nextLine() + "\n";
+
+                countFreq(line, freq);
+            }
+//            }
+            myReader.close();
+            //read file into stream, try-with-resources
+//            try (Stream<String> stream = Files.lines(Paths.get(path))) {
+//
+//                stream.forEach(e -> countFreq(e,freq));
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: File not found.");
+            e.printStackTrace();
+        }
+        //System.out.println("Original string is: \n" + original);
+    }
+
+    public void countFreq(String text,Map<Character,Integer> freq)
+    {
+        original.append(text);
+        for (int i = 0 ; i < text.length(); i++) {
+            if (!freq.containsKey(text.charAt(i))) {
+                freq.put(text.charAt(i), 0);
+            }
+            freq.put(text.charAt(i), freq.get(text.charAt(i)) + 1);
+        }
+    }
+    public static List<String> splitEqually(String text, int size) {
+        // Give the list the right capacity to start with. You could use an array
+        // instead if you wanted.
+        List<String> ret = new ArrayList<String>((text.length() + size - 1) / size);
+
+        for (int start = 0; start < text.length(); start += size) {
+            ret.add(text.substring(start, Math.min(text.length(), start + size)));
+        }
+        return ret;
+    }
     public void putInQueue()
     {
         pq = new PriorityQueue<>((l,r) -> l.freq - r.freq);
-        Stream<Map.Entry<Character, Integer>> entriesStream = freq.entrySet().stream();
-//        for (Map.Entry<Character,Integer> entry: freq.entrySet()){
-//            pq.add(new Node(entry.getKey(), entry.getValue()));
-//        };
-        entriesStream.forEach(e -> pq.add(new Node(e.getKey(), e.getValue())));
+
+        //Stream<Map.Entry<Character, Integer>> entriesStream = freq.entrySet().stream();
+        for (Map.Entry<Character,Integer> entry: freq.entrySet()){
+            pq.add(new Node(entry.getKey(), entry.getValue()));
+        };
+        //entriesStream.forEach(e -> pq.add(new Node(e.getKey(), e.getValue())));
+
         while (pq.size() != 1)
         {
             Node left = pq.poll();
@@ -36,7 +133,7 @@ public class HuffmanEncoding {
 
         long end1 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
-        float sec1 = (end1 - start1) / 1000F;
+        sec1 = (end1 - start1) / 1000F;
         System.out.println("Create the tree time: " + sec1 + " seconds");
 
         long start2 = System.currentTimeMillis();
@@ -45,6 +142,12 @@ public class HuffmanEncoding {
 
         Map<Character,String> huffmanCode = new HashMap<>();
         encode(root,"",huffmanCode);
+//        System.out.println("Huffman Codes are :\n");
+//        for (Map.Entry<Character, String> entry : huffmanCode.entrySet()) {
+//            System.out.println(entry.getKey() + " " + entry.getValue());
+//        }
+
+        // print encoded string
         encoded = new StringBuilder();
         File eFile = new File("encoded.txt");
         FileWriter ewriter = null;
@@ -77,91 +180,76 @@ public class HuffmanEncoding {
         for (int i = 0; i < strBytes.size(); i++){
 
             String str = strBytes.get(i);
+            //System.out.println("STR: "+ str);
             int val = Integer.parseInt(str);
             byte b = (byte) val;
             out.write(b);
+            //System.out.println(b);
         }
-        out.close();
+        out.flush();
         long end2 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
-        float sec2 = (end2 - start2) / 1000F;
+        sec2 = (end2 - start2) / 1000F;
         System.out.println("Encode the file using the tree time: " + sec2 + " seconds");
+        System.out.println("\nEncoded string is :\n" + sb);
+//
+//        // traverse the Huffman Tree again and this time
+//        // decode the encoded string
+//        int index = -1;
+//        File oFile = new File("decoded.txt");
+//        FileWriter writer = null;
+//        try {
+//            writer = new FileWriter(oFile);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("\nDecoded string is: \n");
+//        while (index < sb.length() - 2) {
+//            index = decode(root, index, encoded,writer);
+//        }
+//        try {
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
 
     }
+    public static int decode(Node root, int index, StringBuilder sb,FileWriter writer)
+    {
+        if (root == null)
+            return index;
 
-    PriorityQueue<Node> pq;
-    Map<Character, Integer> freq;
-    StringBuilder original;
-    StringBuilder encoded;
-
-    public void readText(String path) {
-        original = new StringBuilder();
-        freq = new HashMap<>();
-        try {
-            File myObj = new File(path);
-            Scanner myReader = new Scanner(myObj);
-            for (int i = 0; i < 7; i++) {
-                myReader.nextLine();
-            }
-            myReader.close();
-            //read file into stream, try-with-resources
-            try (Stream<String> stream = Files.lines(Paths.get(path))) {
-                stream.forEach(e -> countFreq(e, freq));
+        // found a leaf node
+        if (root.left == null && root.right == null)
+        {
+            try {
+                writer.append(root.ch);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("Error: File not found.");
-            e.printStackTrace();
+            System.out.print(root.ch);
+            return index;
         }
+
+        index++;
+
+        if (sb.charAt(index) == '0')
+            index = decode(root.left, index, sb,writer);
+        else
+            index = decode(root.right, index, sb,writer);
+
+        return index;
     }
 
-    public void countFreq(String text, Map<Character, Integer> freq) {
-        original.append(text);
-        for (int i = 0; i < text.length(); i++) {
-            if (!freq.containsKey(text.charAt(i))) {
-                freq.put(text.charAt(i), 0);
-            }
-            freq.put(text.charAt(i), freq.get(text.charAt(i)) + 1);
-        }
-    }
-
-    public static List<String> splitEqually(String text, int size) {
-        // Give the list the right capacity to start with. You could use an array
-        // instead if you wanted.
-        List<String> ret = new ArrayList<String>((text.length() + size - 1) / size);
-
-        for (int start = 0; start < text.length(); start += size) {
-            ret.add(text.substring(start, Math.min(text.length(), start + size)));
-        }
-        return ret;
-    }
-
-    class Node {
-        char ch;
-        int freq;
-        Node left = null, right = null;
-
-        Node(char ch, int freq) {
-            this.ch = ch;
-            this.freq = freq;
-        }
-
-        public Node(char ch, int freq, Node left, Node right) {
-            this.ch = ch;
-            this.freq = freq;
-            this.left = left;
-            this.right = right;
-        }
-    }
-
-    public void encode(Node root, String str, Map<Character, String> code) {
-        if (root == null)
+    public void encode(Node root, String str, Map<Character,String> code)
+    {
+        if(root == null)
             return;
         if (root.left == null && root.right == null)
-            code.put(root.ch, str);
-        encode(root.left, str + "0", code);
-        encode(root.right, str + "1", code);
+            code.put(root.ch,str);
+        encode(root.left,str+"0",code);
+        encode(root.right,str+"1",code);
 
     }
 }
