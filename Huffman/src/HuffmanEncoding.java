@@ -2,7 +2,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
+
 class Bits {
     final BitSet bitset;
     final int nbits;
@@ -22,40 +26,15 @@ class Bits {
 }
 public class HuffmanEncoding {
     private BitOutputStream output;
+    private long start1;
     public HuffmanEncoding(String str)
     {
+
+        long start1 = System.currentTimeMillis();
         readText(str);
         putInQueue();
     }
 
-    public static void writeBody(StringBuilder binChar, String outputFileName) {
-        // write the bytes to the file
-        while (binChar.length() > 8) {
-            int readMax = 8 * (binChar.length() / 8);
-            FileOutputHelper.writeBinStrToFile(binChar.substring(0, readMax), outputFileName);
-            binChar.delete(0, readMax);
-        }
-
-        if (binChar.length() != 0) {
-            for (int i = binChar.length(); i != 8; i++)
-                binChar.append("0");
-            FileOutputHelper.writeBinStrToFile(binChar.toString(), outputFileName);
-        }
-    }
-    // Method that displays the header in file format.
-    public static void writeHeader(String header, String outputFileName) {
-        for (int i = 0; i < header.length(); i++) {
-            String section = convertTo8bits(Integer.toBinaryString(header.charAt(i)));
-            FileOutputHelper.writeBinStrToFile(section, outputFileName);
-        }
-    }
-    public static String formatHeader(HashMap<String, String> codewords) {
-        String header = "";
-
-        for (Map.Entry<String, String> entry : codewords.entrySet())
-            header += entry.getKey() + "," + entry.getValue() + "\n";
-        return header + "\n";
-    }
     public static String convertTo8bits(String binary) {
         String zeros = "";
 
@@ -101,21 +80,31 @@ public class HuffmanEncoding {
             for (int i = 0; i < 7; i++){
                 myReader.nextLine();
             }
-            while (myReader.hasNextLine()) {
-                String line = myReader.nextLine() + "\n";
-                original.append(line);
-                countFreq(line,freq);
-            }
             myReader.close();
+            //read file into stream, try-with-resources
+            try (Stream<String> stream = Files.lines(Paths.get(path))) {
+                stream.forEach( e -> countFreq(e,freq));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+//
+//            while (myReader.hasNextLine()) {
+//
+//                String line = myReader.nextLine() + "\n";
+//
+//                countFreq(line,freq);
+//            }
+//            myReader.close();
         } catch (FileNotFoundException e) {
             System.out.println("Error: File not found.");
             e.printStackTrace();
         }
-        System.out.println("Original string is: \n" + original);
+        //System.out.println("Original string is: \n" + original);
     }
 
     public void countFreq(String text,Map<Character,Integer> freq)
     {
+        original.append(text);
         for (int i = 0 ; i < text.length(); i++) {
             if (!freq.containsKey(text.charAt(i))) {
                 freq.put(text.charAt(i), 0);
@@ -136,9 +125,11 @@ public class HuffmanEncoding {
     public void putInQueue()
     {
         pq = new PriorityQueue<>((l,r) -> l.freq - r.freq);
-        for (Map.Entry<Character,Integer> entry: freq.entrySet()){
-            pq.add(new Node(entry.getKey(), entry.getValue()));
-        }
+        Stream<Map.Entry<Character, Integer>> entriesStream = freq.entrySet().stream();
+//        for (Map.Entry<Character,Integer> entry: freq.entrySet()){
+//            pq.add(new Node(entry.getKey(), entry.getValue()));
+//        };
+        entriesStream.forEach(e -> pq.add(new Node(e.getKey(), e.getValue())));
         while (pq.size() != 1)
         {
             Node left = pq.poll();
@@ -148,14 +139,21 @@ public class HuffmanEncoding {
             pq.add(new Node('\0',sum,left,right));
         }
 
+        long end1 = System.currentTimeMillis();
+        //finding the time difference and converting it into seconds
+        float sec1 = (end1 - start1) / 1000F;
+        System.out.println("Create the tree time: " + sec1 + " seconds");
+
+        long start2 = System.currentTimeMillis();
+
         Node root = pq.peek();
 
         Map<Character,String> huffmanCode = new HashMap<>();
         encode(root,"",huffmanCode);
-        System.out.println("Huffman Codes are :\n");
-        for (Map.Entry<Character, String> entry : huffmanCode.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue());
-        }
+//        System.out.println("Huffman Codes are :\n");
+//        for (Map.Entry<Character, String> entry : huffmanCode.entrySet()) {
+//            System.out.println(entry.getKey() + " " + entry.getValue());
+//        }
 
         // print encoded string
         encoded = new StringBuilder();
@@ -176,8 +174,6 @@ public class HuffmanEncoding {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            System.out.println("CODE: "+ str);
         }
         try {
             ewriter.close();
@@ -192,42 +188,38 @@ public class HuffmanEncoding {
         for (int i = 0; i < strBytes.size(); i++){
 
             String str = strBytes.get(i);
-            System.out.println("STR: "+ str);
+            //System.out.println("STR: "+ str);
             int val = Integer.parseInt(str);
             byte b = (byte) val;
             out.write(b);
-            System.out.println(b);
+            //System.out.println(b);
         }
         out.flush();
-//        BinaryIn in = new BinaryIn("encoded.txt");
-//        while (!in.isEmpty()){
-//            char c = in.readChar();
-//            out.write(c);
-//        }
-//        out.flush();
-//        writeBody(sb,"encoded.txt");
-
+        long end2 = System.currentTimeMillis();
+        //finding the time difference and converting it into seconds
+        float sec2 = (end2 - start2) / 1000F;
+        System.out.println("Encode the file using the tree time: " + sec2 + " seconds");
         System.out.println("\nEncoded string is :\n" + sb);
-
-        // traverse the Huffman Tree again and this time
-        // decode the encoded string
-        int index = -1;
-        File oFile = new File("decoded.txt");
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(oFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("\nDecoded string is: \n");
-        while (index < sb.length() - 2) {
-            index = decode(root, index, encoded,writer);
-        }
-        try {
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//
+//        // traverse the Huffman Tree again and this time
+//        // decode the encoded string
+//        int index = -1;
+//        File oFile = new File("decoded.txt");
+//        FileWriter writer = null;
+//        try {
+//            writer = new FileWriter(oFile);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("\nDecoded string is: \n");
+//        while (index < sb.length() - 2) {
+//            index = decode(root, index, encoded,writer);
+//        }
+//        try {
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 
     }
