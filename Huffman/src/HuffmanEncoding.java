@@ -30,7 +30,7 @@ public class HuffmanEncoding {
     public HuffmanEncoding(String str)
     {
 
-        long start1 = System.currentTimeMillis();
+        start1 = System.currentTimeMillis();
         readText(str);
         putInQueue();
     }
