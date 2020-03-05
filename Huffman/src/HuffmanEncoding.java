@@ -15,19 +15,10 @@ public class HuffmanEncoding {
 
     public HuffmanEncoding(String str)
     {
-//        float taskA = 0;
-//        float taskB = 0;
-//        for (int i = 0; i < 100; i ++) {
             start1 = System.currentTimeMillis();
             readText(str);
             putInQueue();
-//            taskA += sec1;
-//            taskB += sec2;
-//        }
-//        taskA = taskA/100;
-//        taskB = taskB/100;
-//        System.out.println("Task A: " + taskA + "seconds\nTask B: " + taskB + " seconds");
-    }
+}
 
 
 
@@ -74,22 +65,11 @@ public class HuffmanEncoding {
 
                 countFreq(line, freq);
             }
-//            }
             myReader.close();
-            //read file into stream, try-with-resources
-//            try (Stream<String> stream = Files.lines(Paths.get(path))) {
-//
-//                stream.forEach(e -> countFreq(e,freq));
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
         } catch (FileNotFoundException e) {
             System.out.println("Error: File not found.");
             e.printStackTrace();
         }
-        //System.out.println("Original string is: \n" + original);
     }
 
     public void countFreq(String text,Map<Character,Integer> freq)
@@ -142,108 +122,24 @@ public class HuffmanEncoding {
 
         Map<Character,String> huffmanCode = new HashMap<>();
         encode(root,"",huffmanCode);
-//        System.out.println("Huffman Codes are :\n");
-//        for (Map.Entry<Character, String> entry : huffmanCode.entrySet()) {
-//            System.out.println(entry.getKey() + " " + entry.getValue());
-//        }
 
-        // print encoded string
-//        encoded = new StringBuilder();
-//        File eFile = new File("encoded.txt");
-//        FileWriter ewriter = null;
-//        try {
-//            ewriter = new FileWriter(eFile);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
 
         StringBuilder sb = new StringBuilder();
         Stream<Character> characterStream = original.chars().mapToObj(i -> original.charAt(i));
         characterStream.forEach(e -> sb.append(huffmanCode.get(e)));
-//        for (int i = 0 ; i < original.length(); i++) {
-//            String str = huffmanCode.get(original.charAt(i));
-//            sb.append(str);
-//            try {
-//                ewriter.append(str);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        try {
-//            ewriter.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         BinaryOut out = new BinaryOut("coded.txt");
-
         String code = sb.toString();
         List<String> strBytes = splitEqually(code,8);
         Stream<String> stringStream = strBytes.stream();
         stringStream.forEach(str -> out.write((byte)Integer.parseInt(str)));
-//        for (int i = 0; i < strBytes.size(); i++){
-//            String str = strBytes.get(i);
-//            //System.out.println("STR: "+ str);
-//            int val = Integer.parseInt(str);
-//            byte b = (byte) val;
-//            out.write(b);
-//            //System.out.println(b);
-//        }
         out.flush();
         long end2 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
         sec2 = (end2 - start2) / 1000F;
         System.out.println("Encode the file using the tree time: " + sec2 + " seconds");
         System.out.println("\nEncoded string is :\n" + sb);
-//
-//        // traverse the Huffman Tree again and this time
-//        // decode the encoded string
-//        int index = -1;
-//        File oFile = new File("decoded.txt");
-//        FileWriter writer = null;
-//        try {
-//            writer = new FileWriter(oFile);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println("\nDecoded string is: \n");
-//        while (index < sb.length() - 2) {
-//            index = decode(root, index, encoded,writer);
-//        }
-//        try {
-//            writer.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
 
     }
-    public static int decode(Node root, int index, StringBuilder sb,FileWriter writer)
-    {
-        if (root == null)
-            return index;
-
-        // found a leaf node
-        if (root.left == null && root.right == null)
-        {
-            try {
-                writer.append(root.ch);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.print(root.ch);
-            return index;
-        }
-
-        index++;
-
-        if (sb.charAt(index) == '0')
-            index = decode(root.left, index, sb,writer);
-        else
-            index = decode(root.right, index, sb,writer);
-
-        return index;
-    }
-
     public void encode(Node root, String str, Map<Character,String> code)
     {
         if(root == null)
