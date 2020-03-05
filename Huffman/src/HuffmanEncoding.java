@@ -7,41 +7,29 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
-class Bits {
-    final BitSet bitset;
-    final int nbits;
-
-    Bits(BitSet bitset, int nbits) {
-        this.bitset = bitset;
-        this.nbits = nbits;
-    }
-
-    int[] values() {
-        int[] v = new int[nbits];
-        for (int i = bitset.nextSetBit(0); i >= 0; i = bitset.nextSetBit(i + 1)) {
-            v[i] = 1;
-        }
-        return v;
-    }
-}
 public class HuffmanEncoding {
     private BitOutputStream output;
     private long start1;
+    private float sec1;
+    private float sec2;
+
     public HuffmanEncoding(String str)
     {
-
-        long start1 = System.currentTimeMillis();
-        readText(str);
-        putInQueue();
+//        float taskA = 0;
+//        float taskB = 0;
+//        for (int i = 0; i < 100; i ++) {
+            start1 = System.currentTimeMillis();
+            readText(str);
+            putInQueue();
+//            taskA += sec1;
+//            taskB += sec2;
+//        }
+//        taskA = taskA/100;
+//        taskB = taskB/100;
+//        System.out.println("Task A: " + taskA + "seconds\nTask B: " + taskB + " seconds");
     }
 
-    public static String convertTo8bits(String binary) {
-        String zeros = "";
 
-        for (int i = 0; i != (8 - binary.length()); i++)
-            zeros += "0";
-        return zeros + binary;
-    }
 
 
 
@@ -80,21 +68,23 @@ public class HuffmanEncoding {
             for (int i = 0; i < 7; i++){
                 myReader.nextLine();
             }
+            while (myReader.hasNextLine()) {
+
+                String line = myReader.nextLine() + "\n";
+
+                countFreq(line, freq);
+            }
+//            }
             myReader.close();
             //read file into stream, try-with-resources
-            try (Stream<String> stream = Files.lines(Paths.get(path))) {
-                stream.forEach( e -> countFreq(e,freq));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try (Stream<String> stream = Files.lines(Paths.get(path))) {
 //
-//            while (myReader.hasNextLine()) {
+//                stream.forEach(e -> countFreq(e,freq));
 //
-//                String line = myReader.nextLine() + "\n";
-//
-//                countFreq(line,freq);
+//            } catch (IOException e) {
+//                e.printStackTrace();
 //            }
-//            myReader.close();
+
         } catch (FileNotFoundException e) {
             System.out.println("Error: File not found.");
             e.printStackTrace();
@@ -125,11 +115,13 @@ public class HuffmanEncoding {
     public void putInQueue()
     {
         pq = new PriorityQueue<>((l,r) -> l.freq - r.freq);
-        Stream<Map.Entry<Character, Integer>> entriesStream = freq.entrySet().stream();
-//        for (Map.Entry<Character,Integer> entry: freq.entrySet()){
-//            pq.add(new Node(entry.getKey(), entry.getValue()));
-//        };
-        entriesStream.forEach(e -> pq.add(new Node(e.getKey(), e.getValue())));
+
+        //Stream<Map.Entry<Character, Integer>> entriesStream = freq.entrySet().stream();
+        for (Map.Entry<Character,Integer> entry: freq.entrySet()){
+            pq.add(new Node(entry.getKey(), entry.getValue()));
+        };
+        //entriesStream.forEach(e -> pq.add(new Node(e.getKey(), e.getValue())));
+
         while (pq.size() != 1)
         {
             Node left = pq.poll();
@@ -141,7 +133,7 @@ public class HuffmanEncoding {
 
         long end1 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
-        float sec1 = (end1 - start1) / 1000F;
+        sec1 = (end1 - start1) / 1000F;
         System.out.println("Create the tree time: " + sec1 + " seconds");
 
         long start2 = System.currentTimeMillis();
@@ -197,7 +189,7 @@ public class HuffmanEncoding {
         out.flush();
         long end2 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
-        float sec2 = (end2 - start2) / 1000F;
+        sec2 = (end2 - start2) / 1000F;
         System.out.println("Encode the file using the tree time: " + sec2 + " seconds");
         System.out.println("\nEncoded string is :\n" + sb);
 //
