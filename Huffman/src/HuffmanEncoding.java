@@ -148,44 +148,46 @@ public class HuffmanEncoding {
 //        }
 
         // print encoded string
-        encoded = new StringBuilder();
-        File eFile = new File("encoded.txt");
-        FileWriter ewriter = null;
-        try {
-            ewriter = new FileWriter(eFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        encoded = new StringBuilder();
+//        File eFile = new File("encoded.txt");
+//        FileWriter ewriter = null;
+//        try {
+//            ewriter = new FileWriter(eFile);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         StringBuilder sb = new StringBuilder();
-        for (int i = 0 ; i < original.length(); i++) {
-            String str = huffmanCode.get(original.charAt(i));
-            sb.append(str);
-            try {
-                ewriter.append(str);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            ewriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Stream<Character> characterStream = original.chars().mapToObj(i -> original.charAt(i));
+        characterStream.forEach(e -> sb.append(huffmanCode.get(e)));
+//        for (int i = 0 ; i < original.length(); i++) {
+//            String str = huffmanCode.get(original.charAt(i));
+//            sb.append(str);
+//            try {
+//                ewriter.append(str);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        try {
+//            ewriter.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         BinaryOut out = new BinaryOut("coded.txt");
 
         String code = sb.toString();
         List<String> strBytes = splitEqually(code,8);
-
-        for (int i = 0; i < strBytes.size(); i++){
-
-            String str = strBytes.get(i);
-            //System.out.println("STR: "+ str);
-            int val = Integer.parseInt(str);
-            byte b = (byte) val;
-            out.write(b);
-            //System.out.println(b);
-        }
+        Stream<String> stringStream = strBytes.stream();
+        stringStream.forEach(str -> out.write((byte)Integer.parseInt(str)));
+//        for (int i = 0; i < strBytes.size(); i++){
+//            String str = strBytes.get(i);
+//            //System.out.println("STR: "+ str);
+//            int val = Integer.parseInt(str);
+//            byte b = (byte) val;
+//            out.write(b);
+//            //System.out.println(b);
+//        }
         out.flush();
         long end2 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
