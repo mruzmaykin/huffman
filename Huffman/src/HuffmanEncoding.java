@@ -27,9 +27,11 @@ class Bits {
 public class HuffmanEncoding {
     private BitOutputStream output;
     private long start1;
+    private float sec1;
+    private float sec2;
     public HuffmanEncoding(String str)
     {
-
+        System.out.println("Parallel tree creation and encoding");
         start1 = System.currentTimeMillis();
         readText(str);
         putInQueue();
@@ -141,7 +143,7 @@ public class HuffmanEncoding {
 
         long end1 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
-        float sec1 = (end1 - start1) / 1000F;
+        sec1 = (end1 - start1) / 1000F;
         System.out.println("Create the tree time: " + sec1 + " seconds");
 
         long start2 = System.currentTimeMillis();
@@ -150,78 +152,21 @@ public class HuffmanEncoding {
 
         Map<Character,String> huffmanCode = new HashMap<>();
         encode(root,"",huffmanCode);
-//        System.out.println("Huffman Codes are :\n");
-//        for (Map.Entry<Character, String> entry : huffmanCode.entrySet()) {
-//            System.out.println(entry.getKey() + " " + entry.getValue());
-//        }
 
-        // print encoded string
-        encoded = new StringBuilder();
-        File eFile = new File("encoded.txt");
-        FileWriter ewriter = null;
-        try {
-            ewriter = new FileWriter(eFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         StringBuilder sb = new StringBuilder();
-        for (int i = 0 ; i < original.length(); i++) {
-            String str = huffmanCode.get(original.charAt(i));
-            sb.append(str);
-            try {
-                ewriter.append(str);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            ewriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Stream<Character> characterStream = original.chars().mapToObj(i -> original.charAt(i));
+        characterStream.forEach(e -> sb.append(huffmanCode.get(e)));
         BinaryOut out = new BinaryOut("coded.txt");
-
         String code = sb.toString();
         List<String> strBytes = splitEqually(code,8);
-
-        for (int i = 0; i < strBytes.size(); i++){
-
-            String str = strBytes.get(i);
-            //System.out.println("STR: "+ str);
-            int val = Integer.parseInt(str);
-            byte b = (byte) val;
-            out.write(b);
-            //System.out.println(b);
-        }
+        Stream<String> stringStream = strBytes.stream();
+        stringStream.forEach(str -> out.write((byte)Integer.parseInt(str)));
         out.flush();
         long end2 = System.currentTimeMillis();
         //finding the time difference and converting it into seconds
-        float sec2 = (end2 - start2) / 1000F;
+        sec2 = (end2 - start2) / 1000F;
         System.out.println("Encode the file using the tree time: " + sec2 + " seconds");
-        System.out.println("\nEncoded string is :\n" + sb);
-//
-//        // traverse the Huffman Tree again and this time
-//        // decode the encoded string
-//        int index = -1;
-//        File oFile = new File("decoded.txt");
-//        FileWriter writer = null;
-//        try {
-//            writer = new FileWriter(oFile);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println("\nDecoded string is: \n");
-//        while (index < sb.length() - 2) {
-//            index = decode(root, index, encoded,writer);
-//        }
-//        try {
-//            writer.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
     }
     public static int decode(Node root, int index, StringBuilder sb,FileWriter writer)
     {
