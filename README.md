@@ -1,2 +1,2 @@
 # huffman
-Parallel huffman encoding
+Parallel tree creation and huffman encoding
