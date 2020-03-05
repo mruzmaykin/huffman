@@ -10,7 +10,7 @@ public class HuffmanEncoding {
     private long start1;
     public HuffmanEncoding(String str)
     {
-
+        System.out.println("Parallel tree creation");
         start1 = System.currentTimeMillis();
         readText(str);
         putInQueue();
@@ -86,7 +86,6 @@ public class HuffmanEncoding {
         //finding the time difference and converting it into seconds
         float sec2 = (end2 - start2) / 1000F;
         System.out.println("Encode the file using the tree time: " + sec2 + " seconds");
-
     }
 
     PriorityQueue<Node> pq;
