@@ -1,5 +1,5 @@
-#Parallel Huffman Encoding
-##Branches:
+# Parallel Huffman Encoding
+## Branches:
 ### Master: Sequential huffman
 ### impl_A: Parallel tree creation
 ### impl_B: Parallel encoding
